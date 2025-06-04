@@ -87,51 +87,67 @@ elif page == "🧪 Run a Prediction":
         """)
 
 # -------------------------------
-# 📊 Sample Results
+# 📊 Sample Results 
 # -------------------------------
 elif page == "📊 Sample Results":
     st.title("📁 Try with Real Patient-Like Sample Data")
 
-    df_sample = pd.read_csv("data/Cancer prediction dataset.csv").sample(5, random_state=42)
-    st.markdown("These are real-like patient records sampled from the original dataset. The model will now predict each case, and you'll see the predicted diagnosis along with confidence levels, business interpretation, and recommendations.")
+    df_all = pd.read_csv("data/Cancer prediction dataset.csv")
 
-    # Display sample data with actual diagnosis
-    st.dataframe(df_sample[columns + ["diagnosis"]])
+    # Dropdown for selecting patients by index
+    index_options = df_all.index.tolist()
+    selected_indices = st.multiselect("🧬 Choose Patients by Row Index", index_options[:50], default=index_options[:1])
 
-    # Predict using model
-    X_sample = df_sample[columns]
-    X_sample_scaled = scaler.transform(X_sample)
-    y_pred_sample = model.predict(X_sample_scaled)
-    y_proba_sample = model.predict_proba(X_sample_scaled)
-
-    for i in range(len(df_sample)):
-        st.subheader(f"🔬 Patient #{i+1}")
-        st.write(f"**True Diagnosis**: {'Malignant' if df_sample.iloc[i]['diagnosis'] == 1 else 'Benign'}")
-        st.write(f"**Predicted Diagnosis**: {'Malignant' if y_pred_sample[i] == 1 else 'Benign'}")
-        st.write(f"**Probability of Malignant**: {y_proba_sample[i][1]*100:.2f}%")
-        st.write(f"**Probability of Benign**: {y_proba_sample[i][0]*100:.2f}%")
-
-        if y_pred_sample[i] == 1:
-            st.error("⚠️ Likely Malignant Tumor – Recommend immediate follow-up and confirmatory imaging/biopsy.")
+    if st.button("🔍 SUBMIT & Predict Selected"):
+        if not selected_indices:
+            st.warning("Please select at least one patient to proceed.")
         else:
-            st.success("🟢 Likely Benign Tumor – Routine monitoring suggested.")
+            df_selected = df_all.loc[selected_indices]
+            st.dataframe(df_selected[columns + ['diagnosis']])
 
-        # Business impact insights
-        st.markdown("""
-        **📈 Interpretation & Business Insight:**  
-        - Early prediction allows for faster intervention and cost savings.
-        - Model's precision reduces unnecessary biopsies (false positives).
-        - Each correct malignant detection can potentially save **$50,000–$100,000** in treatment escalation.
-        """)
+            X_selected = df_selected[columns]
+            X_selected_scaled = scaler.transform(X_selected)
+            y_pred_selected = model.predict(X_selected_scaled)
+            y_proba_selected = model.predict_proba(X_selected_scaled)
 
-        # Recommendation
-        st.markdown("""
-        **💡 Recommendation:**  
-        - Flag high-risk patients for immediate specialist review.  
-        - Use probability scores >90% as a strong clinical decision support tool.
-        """)
+            for i, idx in enumerate(selected_indices):
+                st.subheader(f"🔬 Patient #{i+1}")
 
-        st.markdown("---")
+                true_val = 'Malignant' if df_selected.loc[idx, 'diagnosis'] == 1 else 'Benign'
+                predicted_val = 'Malignant' if y_pred_selected[i] == 1 else 'Benign'
+                prob_malignant = y_proba_selected[i][1] * 100
+                prob_benign = y_proba_selected[i][0] * 100
+
+                st.write(f"**True Diagnosis:** {true_val}")
+                st.write(f"**Predicted Diagnosis:** {predicted_val}")
+                st.write(f"**Probability of Malignant:** {prob_malignant:.2f}%")
+                st.write(f"**Probability of Benign:** {prob_benign:.2f}%")
+
+                # Icon-based dynamic messaging
+                if predicted_val == "Malignant":
+                    if prob_malignant > 90:
+                        st.error("🔴 Very High Risk of Malignancy – Urgent specialist escalation advised.")
+                    else:
+                        st.warning("⚠️ Likely Malignant Tumor – Recommend follow-up with imaging/biopsy.")
+                else:
+                    st.success("🟢 Likely Benign Tumor – Routine monitoring suggested.")
+
+                # Business insights
+                st.markdown("""
+                ### 📈 Interpretation & Business Insight:
+                - Early prediction allows for faster intervention and cost savings.
+                - Model's precision reduces unnecessary biopsies (false positives).
+                - Each correct malignant detection can potentially save **$50,000–$100,000** in treatment escalation.
+                """)
+
+                # Recommendations
+                st.markdown("""
+                ### 💡 Recommendation:
+                - Flag high-risk patients for immediate specialist review.
+                - Use probability scores >90% as a strong clinical decision support tool.
+                """)
+
+                st.markdown("---")
 
 # -------------------------------
 # 📈 Model Info & Performance
