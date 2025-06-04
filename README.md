@@ -25,11 +25,11 @@ Most hospitals struggle with the dual challenge of:
 4. No clinical support system integrated into the diagnostic workflow.
 
 We solve this with a model that is:
-- Accurate ✅
-- Faster predictions ✅
-- Explainability for trust & transparent (SHAP) ✅
-- Easy to deploy ✅
-- Clinical-grade performance
+- Accurate ✅  
+- Faster predictions ✅  
+- Explainability for trust & transparent (SHAP) ✅  
+- Easy to deploy ✅  
+- Clinical-grade performance  
 
 ---
 
@@ -70,32 +70,43 @@ We solve this with a model that is:
 ## 📁 Patient-Level Sample Predictions
 
 You can now:                
-- 🧬 Select **real-like patient cases** from a dropdown                      
-- 🔍 See **individual predictions**, confidence levels, and medical insight                      
-- 🟢⚠️🔴 Get dynamic risk-based messages                        
-- 💼 View **business impact per patient** including estimated financial implications and recommendations                         
+- 🧬 Select **real-like patient cases** from a dropdown **with true diagnosis label shown**  
+- 🔍 See **individual predictions**, confidence levels, and medical insight  
+- 🟢⚠️🔴 Get dynamic risk-based messages per case  
+- 💼 View **business impact per patient** including estimated financial implications and recommendations  
+- 🧠 **Set custom decision thresholds** to explore model sensitivity  
 
-*Example Output:*
-🔬 Patient #1
-True Diagnosis: Benign
-Predicted Diagnosis: Benign
-Probability of Malignant: 16.86%
-Probability of Benign: 83.14%
+*Example Output:*  
+🔬 Patient #1  
+True Diagnosis: Benign  
+Predicted Diagnosis: Benign  
+Probability of Malignant: 16.86%  
+Probability of Benign: 83.14%  
 🟢 Likely Benign Tumor – Routine monitoring suggested.
 
-📈 Interpretation & Business Insight:
+📈 Interpretation & Business Insight:  
+- Early prediction allows for faster intervention and cost savings.  
+- Model's precision reduces unnecessary biopsies.  
+- Each malignant detection can save **$50,000–$100,000** in escalation cost.  
 
-Early prediction allows for faster intervention and cost savings.
+💡 Recommendation:  
+- Flag high-risk patients for urgent review.  
+- Use >90% probability as decision support for escalations.  
 
-Model's precision reduces unnecessary biopsies.
+---
 
-Each malignant detection can save $50,000–$100,000 in escalation cost.
+## 📊 Diagnostic Thresholds & Feature Guidelines
 
-💡 Recommendation:
+| Feature Name           | Malignant Threshold ↑ | Benign Threshold ↓ | Interpretation |
+|------------------------|------------------------|---------------------|----------------|
+| `radius_worst`         | > 16.0                 | < 13.0              | Tumor size |
+| `texture_worst`        | > 25.0                 | < 20.0              | Irregular texture |
+| `concave_points_worst` | > 0.14                 | < 0.08              | Border sharpness |
+| `perimeter_worst`      | > 110                  | < 85                | Tumor boundary |
+| `area_worst`           | > 1000                 | < 600               | Mass extent |
 
-Flag high-risk patients for urgent review.
-
-Use >90% probability as decision support for escalations.
+✅ If multiple features exceed malignant thresholds → prediction = "Malignant"  
+⚠️ Borderline values → prompt further review with imaging/clinical input  
 
 ---
 
@@ -110,10 +121,10 @@ Use >90% probability as decision support for escalations.
 
 This tool helps healthcare professionals identify high-risk patients with >90% probability of malignancy, flagging them early for escalation.
 
-- 🎯 Reduces false positives → fewer unnecessary biopsies.
-- 💸 Saves an estimated $50,000–$100,000 per early malignant detection.
-- ⏱️ Enables earlier intervention, increasing patient survival and reducing costs.
-- 🤝 Can be integrated into hospital triage systems or digital pathology workflows.
+- 🎯 Reduces false positives → fewer unnecessary biopsies.  
+- 💸 Saves an estimated $50,000–$100,000 per early malignant detection.  
+- ⏱️ Enables earlier intervention, increasing patient survival and reducing costs.  
+- 🤝 Can be integrated into hospital triage systems or digital pathology workflows.  
 
 This ML-powered solution is also applicable to large-scale screening systems (like used by Amazon Health or Netflix-type health optimization projects).
 
@@ -137,12 +148,12 @@ This ML-powered solution is also applicable to large-scale screening systems (li
 - Strong technical + domain project that’s production-ready
 
 ### 📦 Netflix / Amazon:
-Although this model is built for healthcare, the **architecture and logic** (Logistic Regression + Explainability) is relevant for:
-Build **interpretable, real-time ML systems** with cost-sensitive outcomes (churn, fraud, health tech)
-- **Netflix**: Classifying churn likelihood of viewers with SHAP-based explanation
-- **Amazon Health**: Integrating ML-driven pre-screening into mobile wellness apps
-- **Finance/Fraud**: Logistic-based risk prediction models for interpretable decisions
-- Detect **anomalous content behavior** or user engagement patterns with similar logistic + SHAP workflows
+Although this model is built for healthcare, the **architecture and logic** (Logistic Regression + Explainability) is relevant for:  
+Build **interpretable, real-time ML systems** with cost-sensitive outcomes (churn, fraud, health tech)  
+- **Netflix**: Classifying churn likelihood of viewers with SHAP-based explanation  
+- **Amazon Health**: Integrating ML-driven pre-screening into mobile wellness apps  
+- **Finance/Fraud**: Logistic-based risk prediction models for interpretable decisions  
+- Detect **anomalous content behavior** or user engagement patterns with similar logistic + SHAP workflows  
 
 ---
 
@@ -154,6 +165,8 @@ cd Cancer_Prediction_ML
 pip install -r requirements.txt
 streamlit run app.py
 ```
+
+---
 
 Or try it live:
 👉 [https://cancerpredictionml-logisticregression.streamlit.app/](https://cancerpredictionml-logisticregression.streamlit.app/)

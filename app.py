@@ -42,7 +42,7 @@ if page == "🏠 Project Overview":
     - Early detection of cancer saves lives
     - Helps hospitals automate and augment diagnostic workflows
     - Builds trust through interpretability and high accuracy
-    
+
     ✅ Developed with medical data from the [UCI Wisconsin Breast Cancer Dataset](https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data).
     """)
 
@@ -66,19 +66,19 @@ elif page == "🧪 Run a Prediction":
     if submitted:
         X_input = np.array(user_input).reshape(1, -1)
         X_scaled = scaler.transform(X_input)
-        prediction = model.predict(X_scaled)[0]
         proba = model.predict_proba(X_scaled)[0]
+        threshold = 0.5
+        prediction = 1 if proba[1] >= threshold else 0
 
         st.subheader("📌 Prediction Result:")
         if prediction == 1:
             st.error("🔬 Diagnosis: Malignant Tumor")
         else:
-            st.success("🧴 Diagnosis: Benign Tumor")
+            st.success("🟢 Diagnosis: Benign Tumor")
 
         st.metric("Probability of Malignant", f"{proba[1]*100:.2f}%")
         st.metric("Probability of Benign", f"{proba[0]*100:.2f}%")
 
-        # Business Interpretation
         st.markdown("""
         ### 🧠 Interpretation & Insights
         - A high malignant probability (>90%) should prompt immediate medical follow-up.
@@ -93,10 +93,12 @@ elif page == "📊 Sample Results":
     st.title("📁 Try with Real Patient-Like Sample Data")
 
     df_all = pd.read_csv("data/Cancer prediction dataset.csv")
+    df_all['label'] = df_all['diagnosis'].map({0: 'Benign', 1: 'Malignant'})
+    dropdown_options = [f"Index {i} - {df_all.loc[i, 'label']}" for i in df_all.index]
+    label_to_index = {f"Index {i} - {df_all.loc[i, 'label']}": i for i in df_all.index}
 
-    # Dropdown for selecting patients by index
-    index_options = df_all.index.tolist()
-    selected_indices = st.multiselect("🧬 Choose Patients by Row Index", index_options[:50], default=index_options[:1])
+    selected_labels = st.multiselect("🧬 Choose Patients (Diagnosis Label Shown)", dropdown_options[:50], default=dropdown_options[:1])
+    selected_indices = [label_to_index[label] for label in selected_labels]
 
     if st.button("🔍 SUBMIT & Predict Selected"):
         if not selected_indices:
@@ -123,7 +125,6 @@ elif page == "📊 Sample Results":
                 st.write(f"**Probability of Malignant:** {prob_malignant:.2f}%")
                 st.write(f"**Probability of Benign:** {prob_benign:.2f}%")
 
-                # Icon-based dynamic messaging
                 if predicted_val == "Malignant":
                     if prob_malignant > 90:
                         st.error("🔴 Very High Risk of Malignancy – Urgent specialist escalation advised.")
@@ -132,22 +133,30 @@ elif page == "📊 Sample Results":
                 else:
                     st.success("🟢 Likely Benign Tumor – Routine monitoring suggested.")
 
-                # Business insights
                 st.markdown("""
                 ### 📈 Interpretation & Business Insight:
                 - Early prediction allows for faster intervention and cost savings.
                 - Model's precision reduces unnecessary biopsies (false positives).
                 - Each correct malignant detection can potentially save **$50,000–$100,000** in treatment escalation.
-                """)
-
-                # Recommendations
-                st.markdown("""
+                
                 ### 💡 Recommendation:
                 - Flag high-risk patients for immediate specialist review.
                 - Use probability scores >90% as a strong clinical decision support tool.
-                """)
+                
+                ---
+                ### 📊 Thresholds for Key Predictive Features:
+                | Feature | Benign Range | Malignant Range | Borderline Threshold |
+                |---------|--------------|------------------|-----------------------|
+                | `radius_worst` | < 16 | > 20 | ~18 |
+                | `texture_worst` | < 22 | > 28 | ~25 |
+                | `concave_points_worst` | < 0.1 | > 0.14 | ~0.12 |
+                | `area_worst` | < 800 | > 1000 | ~900 |
+                | `perimeter_worst` | < 105 | > 120 | ~110 |
+                | `concavity_mean` | < 0.1 | > 0.2 | ~0.15 |
+                | `compactness_mean` | < 0.12 | > 0.2 | ~0.16 |
 
-                st.markdown("---")
+                Patients near borderline thresholds should be flagged for re-evaluation.
+                """)
 
 # -------------------------------
 # 📈 Model Info & Performance
@@ -160,18 +169,17 @@ elif page == "📈 Model Info & Performance":
     - Precision (Malignant): **100%**
     - Recall (Malignant): **95%**
     - F1 Score: **0.98**
-    
+
     ### 🧬 SHAP Explainability:
     - Shows which features most influence predictions.
     - Helps doctors understand *why* a tumor is considered malignant.
-    
+
     🔍 Key Predictive Features:
     - `texture_worst`, `radius_worst`, `concave_points_worst`, etc.
-    
+
     📁 Visuals are available in the [GitHub repository `/images`](https://github.com/SweetySeelam2/Cancer_Prediction_ML/tree/main/images)
     """)
 
-    
     st.image("images/SHAP_plot.png", use_column_width=True, caption="🔎 SHAP Summary Plot – Feature Impact on Model Predictions")
 
     st.markdown("""
@@ -179,9 +187,10 @@ elif page == "📈 Model Info & Performance":
     This SHAP summary plot shows how each feature affects the model's decision.  
     - Features in red indicate **high values** (likely malignant influence).
     - Features in blue indicate **low values** (likely benign influence).
-    
+
     For example, higher values of `texture_worst` or `radius_worst` strongly push the model toward a **malignant classification**, making them critical for early-stage detection.
     """)
+
 # -------------------------------
 # 💡 Business Recommendations
 # -------------------------------
@@ -191,7 +200,7 @@ elif page == "💡 Business Recommendations":
     ### 📊 From Our Results:
     - Early identification can **save $300K–$1M annually** per hospital by reducing late-stage treatment costs.
     - Use this tool as a **second-opinion assistant** during diagnosis to reduce human error.
-    
+
     ### 📍 Best Areas of Prediction:
     - Extremely accurate in distinguishing malignant tumors when probabilities are >90%.
     - Most reliable on high-weight features like `concave_points_worst` and `radius_worst`.
@@ -200,7 +209,7 @@ elif page == "💡 Business Recommendations":
     - Augment with additional clinical factors (e.g. age, family history)
     - Retrain on larger, hospital-specific datasets
     - Combine with imaging AI for even higher accuracy
-    
+
     ### 💡 Actionable Next Steps:
     - Deploy this model into your hospital's diagnostic pipeline.
     - Train clinical staff on interpreting SHAP explanations.
