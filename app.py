@@ -91,9 +91,47 @@ elif page == "🧪 Run a Prediction":
 # -------------------------------
 elif page == "📊 Sample Results":
     st.title("📁 Try with Real Patient-Like Sample Data")
-    df_sample = pd.read_csv("Cancer prediction dataset.csv").sample(5)
+
+    df_sample = pd.read_csv("data/Cancer prediction dataset.csv").sample(5, random_state=42)
+    st.markdown("These are real-like patient records sampled from the original dataset. The model will now predict each case, and you'll see the predicted diagnosis along with confidence levels, business interpretation, and recommendations.")
+
+    # Display sample data with actual diagnosis
     st.dataframe(df_sample[columns + ["diagnosis"]])
-    st.markdown("Use these values in the prediction form to see how the model responds to real data.")
+
+    # Predict using model
+    X_sample = df_sample[columns]
+    X_sample_scaled = scaler.transform(X_sample)
+    y_pred_sample = model.predict(X_sample_scaled)
+    y_proba_sample = model.predict_proba(X_sample_scaled)
+
+    for i in range(len(df_sample)):
+        st.subheader(f"🔬 Patient #{i+1}")
+        st.write(f"**True Diagnosis**: {'Malignant' if df_sample.iloc[i]['diagnosis'] == 1 else 'Benign'}")
+        st.write(f"**Predicted Diagnosis**: {'Malignant' if y_pred_sample[i] == 1 else 'Benign'}")
+        st.write(f"**Probability of Malignant**: {y_proba_sample[i][1]*100:.2f}%")
+        st.write(f"**Probability of Benign**: {y_proba_sample[i][0]*100:.2f}%")
+
+        if y_pred_sample[i] == 1:
+            st.error("⚠️ Likely Malignant Tumor – Recommend immediate follow-up and confirmatory imaging/biopsy.")
+        else:
+            st.success("🟢 Likely Benign Tumor – Routine monitoring suggested.")
+
+        # Business impact insights
+        st.markdown("""
+        **📈 Interpretation & Business Insight:**  
+        - Early prediction allows for faster intervention and cost savings.
+        - Model's precision reduces unnecessary biopsies (false positives).
+        - Each correct malignant detection can potentially save **$50,000–$100,000** in treatment escalation.
+        """)
+
+        # Recommendation
+        st.markdown("""
+        **💡 Recommendation:**  
+        - Flag high-risk patients for immediate specialist review.  
+        - Use probability scores >90% as a strong clinical decision support tool.
+        """)
+
+        st.markdown("---")
 
 # -------------------------------
 # 📈 Model Info & Performance
@@ -114,9 +152,20 @@ elif page == "📈 Model Info & Performance":
     🔍 Key Predictive Features:
     - `texture_worst`, `radius_worst`, `concave_points_worst`, etc.
     
-    📁 Visuals are available in the GitHub repo under `/images`
+    📁 Visuals are available in the [GitHub repository `/images`](https://github.com/SweetySeelam2/Cancer_Prediction_ML/tree/main/images)
     """)
 
+    
+    st.image("images/SHAP_plot.png", use_column_width=True, caption="🔎 SHAP Summary Plot – Feature Impact on Model Predictions")
+
+    st.markdown("""
+    **Interpretation**:  
+    This SHAP summary plot shows how each feature affects the model's decision.  
+    - Features in red indicate **high values** (likely malignant influence).
+    - Features in blue indicate **low values** (likely benign influence).
+    
+    For example, higher values of `texture_worst` or `radius_worst` strongly push the model toward a **malignant classification**, making them critical for early-stage detection.
+    """)
 # -------------------------------
 # 💡 Business Recommendations
 # -------------------------------
